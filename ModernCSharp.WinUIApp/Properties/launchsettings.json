@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "ModernCSharp.WinUIApp (Unpackaged)": {
+        "commandName": "Project"
+      },
+      "ModernCSharp.WinUIApp (Package)": {
+        "commandName": "MsixPackage"
+      }
+    }
+}

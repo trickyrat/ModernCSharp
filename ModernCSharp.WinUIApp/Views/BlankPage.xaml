@@ -12,7 +12,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <Button x:Name="OpenOrderFileButton"
                 Grid.Row="0"
                 Click="OpenOrderFileButton_Click">
@@ -24,6 +24,22 @@
                        TextWrapping="Wrap" 
                        Padding="20,5,0,0"></TextBlock>
         </StackPanel>
+
+        <StackPanel Grid.Row="2">
+            <ProgressBar x:Name="FetchDataProgressBar" 
+                     Width="100" 
+                     Height="100" 
+                     Minimum="0" 
+                     Maximum="100"/>
+            <ProgressRing x:Name="FetchDataProgressRing" 
+                      Width="100"
+                      Height="100" 
+                      Minimum="0" 
+                      Maximum="100"
+                      IsIndeterminate="False"/>
+            <Button x:Name="StartButton" Click="StartButton_Click">Start</Button>
+        </StackPanel>
+
 
     </Grid>
 </Page>

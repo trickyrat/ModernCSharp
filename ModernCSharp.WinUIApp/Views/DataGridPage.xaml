@@ -7,11 +7,32 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-    <Grid x:Name="ContentArea">
-        <controls:DataGrid
-            AutoGenerateColumns="False"
-            GridLinesVisibility="Horizontal"
-            ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}">
+    <RelativePanel x:Name="ContentArea">
+        <CommandBar x:Name="OrderCommandBar" 
+                    Background="Transparent" 
+                    IsOpen="False" 
+                    DefaultLabelPosition="Right"
+                    RelativePanel.AlignTopWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True">
+            <AppBarButton Icon="Add" Label="Add" Command="{ x:Bind ViewModel.AddOrderCommand }"/>
+            <AppBarButton Icon="Edit" Label="Edit"/>
+            <AppBarButton Icon="Share" Label="Share"/>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Icon="Setting" Label="Settings">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="I" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>
+
+        <controls:DataGrid x:Name="OrderDataGrid"
+                           AutoGenerateColumns="False"
+                           GridLinesVisibility="Horizontal"
+                           ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}"
+                           RelativePanel.Below="OrderCommandBar"
+                           RelativePanel.AlignHorizontalCenterWithPanel="True"
+                           RelativePanel.AlignVerticalCenterWithPanel="True">
             <controls:DataGrid.Resources>
                 <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
             </controls:DataGrid.Resources>
@@ -36,5 +57,6 @@
                 </controls:DataGridTemplateColumn>
             </controls:DataGrid.Columns>
         </controls:DataGrid>
-    </Grid>
+    </RelativePanel>
+
 </Page>

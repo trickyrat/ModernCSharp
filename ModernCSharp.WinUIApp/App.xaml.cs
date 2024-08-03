@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 
 using ModernCSharp.WinUIApp.Activation;
 using ModernCSharp.WinUIApp.Contracts.Services;
+using ModernCSharp.WinUIApp.Controls;
 using ModernCSharp.WinUIApp.Core.Contracts.Services;
 using ModernCSharp.WinUIApp.Core.Services;
 using ModernCSharp.WinUIApp.Helpers;
@@ -68,6 +69,9 @@ public partial class App : Microsoft.UI.Xaml.Application
             // Core Services
             services.AddSingleton<ISampleDataService, SampleDataService>();
             services.AddSingleton<IFileService, FileService>();
+
+            // UserControls
+            services.AddTransient<AddOrderDialog>();
 
             // Views and ViewModels
             services.AddTransient<SettingsViewModel>();

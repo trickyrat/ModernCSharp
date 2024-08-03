@@ -511,4 +511,10 @@ public class SampleDataService : ISampleDataService
         await Task.CompletedTask;
         return _allOrders;
     }
+
+    public Task AddAsync(SampleOrder orderToAdd)
+    {
+        _allOrders.Add(orderToAdd);
+        return Task.CompletedTask;
+    }
 }

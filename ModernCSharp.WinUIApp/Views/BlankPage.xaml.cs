@@ -22,7 +22,7 @@ public sealed partial class BlankPage : Page
 
     private async void OpenOrderFileButton_Click(object sender, RoutedEventArgs e)
     {
-        var orderFilePicker = new FileOpenPicker() 
+        var orderFilePicker = new FileOpenPicker()
         {
             ViewMode = PickerViewMode.Thumbnail,
             SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
@@ -45,6 +45,15 @@ public sealed partial class BlankPage : Page
         else
         {
             OrderFilePathTextBlock.Text = "Operation cancelled.";
+        }
+    }
+
+    private async void StartButton_Click(object sender, RoutedEventArgs e)
+    {
+        await foreach (var progress in ViewModel.ReportProgress())
+        {
+            FetchDataProgressBar.Value = progress;
+            FetchDataProgressRing.Value = progress;
         }
     }
 }

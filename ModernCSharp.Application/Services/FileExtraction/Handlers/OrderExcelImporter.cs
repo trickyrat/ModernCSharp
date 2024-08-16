@@ -1,21 +1,38 @@
 ﻿using ClosedXML.Excel;
 
+using Microsoft.Extensions.Logging;
+
 using ModernCSharp.Application.Abstractions;
 using ModernCSharp.Application.Enums;
 using ModernCSharp.Application.Models;
 using ModernCSharp.Application.Models.Errors;
-using Microsoft.Extensions.Logging;
+using ModernCSharp.Application.Models.FileExtraction;
+using ModernCSharp.Application.Services.FileExtraction.Commands;
 using ModernCSharp.Application.Utils;
 
-namespace ModernCSharp.Application.Services.FileImportServices;
+namespace ModernCSharp.Application.Services.FileExtraction.Handlers;
 
-public class OrderExcelImportService(ILogger<OrderExcelImportService> logger, OrderService orderService) : IFileImportService
+public class OrderExcelImporter(ILogger<OrderExcelImporter> logger, OrderService orderService) : IFileImporter
 {
-    public FileType FileType => FileType.EXCEL;
+    private OrderExcelImportContext _context;
 
-    public async Task<IResult> ImportAsync(FileImportContext context, CancellationToken cancellationToken = default)
+    public List<FileType> FileTypes => [FileType.EXCEL];
+
+    public void InitializeContext(IFileImportContext context)
     {
-        if (!FilePathUtils.ValidateImportContext(context))
+        if (context is OrderExcelImportContext importContext)
+        {
+            _context = importContext;
+        }
+        else
+        {
+            throw new ArgumentException("Invalid file import context");
+        }
+    }
+
+    public async Task<IResult> ImportAsync(CancellationToken cancellationToken = default)
+    {
+        if (!FileIOUtils.ValidateImportContext<OrderExcelImportContext>(_context))
         {
             logger.LogWarning("Invalid import context provided.");
             return Result.Failure(FileImportErrors.InvalidContext);
@@ -23,21 +40,26 @@ public class OrderExcelImportService(ILogger<OrderExcelImportService> logger, Or
 
         try
         {
-            if (!FilePathUtils.ValidatePath(context.InputPath))
+            if (!FileIOUtils.ValidatePath(_context.InputPath))
             {
                 return Result.Failure(FileImportErrors.InvalidInputPath);
             }
-
-            await PerformImportAsync(context, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await PerformImportAsync(_context, cancellationToken);
             return Result.Success();
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogError("Import {FileType} operation  was cancelled.", _context.FileType);
+            return Result.Failure(new("", $"Import {_context.FileType} operation  was cancelled."));
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while importing orders from {@OutputPath}.", context.InputPath);
-            return Result.Failure(new("", $"An error occurred while importing orders from {context.InputPath}."));
+            logger.LogError(ex, "An error occurred while importing orders from {@OutputPath}.", _context.InputPath);
+            return Result.Failure(new("", $"An error occurred while importing orders from {_context.InputPath}."));
         }
     }
-    private async Task PerformImportAsync(FileImportContext context, CancellationToken cancellationToken = default)
+    private async Task PerformImportAsync(OrderExcelImportContext context, CancellationToken cancellationToken = default)
     {
         using var stream = new FileStream(context.InputPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         var wb = new XLWorkbook(stream);

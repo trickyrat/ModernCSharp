@@ -8,9 +8,9 @@ namespace ModernCSharp.WinFormsApp.Presenters;
 
 public class ImportOrderPresenter : AbstractPresenter<ImportOrdersView, ImportOrderPresenter>
 {
-    private readonly ImportService _importService;
+    private readonly FileImporterFactory _importService;
 
-    public ImportOrderPresenter(ImportService importService)
+    public ImportOrderPresenter(FileImporterFactory importService)
     {
         _importService = importService;
     }
@@ -18,7 +18,7 @@ public class ImportOrderPresenter : AbstractPresenter<ImportOrdersView, ImportOr
     public async Task<IResult> Import(string filePath)
     {
         var extension = Path.GetExtension(filePath);
-        var fileType = FilePathUtils.MapToFileType(extension);
+        var fileType = FileIOUtils.MapToFileType(extension);
         var importContext = new FileImportContext(fileType, filePath);
         return await _importService.ImportAsync(importContext);
     }

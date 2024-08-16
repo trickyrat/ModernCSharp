@@ -1,13 +1,18 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ModernCSharp.ConsoleApp.Enums;
-using ModernCSharp.ConsoleApp.Models;
-using ModernCSharp.ConsoleApp.Services.FileExportServices;
-using ModernCSharp.ConsoleApp.Services.FileImportServices;
+
+using ModernCSharp.Application.Enums;
+using ModernCSharp.Application.Services.FileExport;
+using ModernCSharp.Application.Services.FileExport.Commands;
+using ModernCSharp.Application.Services.FileExtraction;
+using ModernCSharp.Application.Services.FileExtraction.Commands;
+
 
 namespace ModernCSharp.ConsoleApp;
 
-public class OrderWorker(ILogger<OrderWorker> logger, ExportService exportService, ImportService importService) : BackgroundService
+public class OrderWorker(ILogger<OrderWorker> logger
+    , FileExporterFactory exporterFactory
+    , FileImporterFactory importerFactory) : BackgroundService
 {
     private int _exitCode = 0;
 
@@ -34,19 +39,22 @@ public class OrderWorker(ILogger<OrderWorker> logger, ExportService exportServic
 
     private async Task<bool> ExportAsync(CancellationToken cancellationToken = default)
     {
-        var csvExportContext = new FileExportContext(FileType: FileType.CSV, OutputPath: "D:\\orders.csv");
-        var result = await exportService.ExportAsync(csvExportContext, cancellationToken);
+        var csvExportContext = new OrderCsvExportContext(FileType.CSV, "D:\\orders.csv");
+        var csvExporter = exporterFactory.Create(csvExportContext);
+        var result = await csvExporter.ExportAsync(cancellationToken);
 
         if (result.IsSuccess)
         {
-            var jsonExportContext = new FileExportContext(FileType: FileType.JSON, OutputPath: "D:\\orders.json");
-            result = await exportService.ExportAsync(jsonExportContext, cancellationToken);
+            var jsonExportContext = new OrderJsonExportContext(FileType.JSON, "D:\\orders.json");
+            var jsonExporter = exporterFactory.Create(jsonExportContext);
+            result = await jsonExporter.ExportAsync(cancellationToken);
         }
 
         if (result.IsSuccess)
         {
-            var excelExportContext = new FileExportContext(FileType: FileType.EXCEL, OutputPath: "D:\\orders.xlsx");
-            result = await exportService.ExportAsync(excelExportContext, cancellationToken);
+            var excelExportContext = new OrderExcelExportContext(FileType.EXCEL, "D:\\orders.xlsx");
+            var excelExporter = exporterFactory.Create(excelExportContext);
+            result = await excelExporter.ExportAsync(cancellationToken);
         }
 
         if (result.IsFailure)
@@ -58,19 +66,22 @@ public class OrderWorker(ILogger<OrderWorker> logger, ExportService exportServic
 
     private async Task<bool> ImportAsync(CancellationToken cancellationToken = default)
     {
-        var csvImportContext = new FileImportContext(FileType: FileType.CSV, InputPath: "D:\\additional orders.csv");
-        var result = await importService.ImportAsync(csvImportContext, cancellationToken);
+        var csvImportContext = new OrderCsvImportContext(FileType.CSV, "D:\\additional orders.csv");
+        var csvImporter = importerFactory.Create(csvImportContext);
+        var result = await csvImporter.ImportAsync(cancellationToken);
 
         if (result.IsSuccess)
         {
-            var jsonImportContext = new FileImportContext(FileType: FileType.JSON, InputPath: "D:\\additional orders.json");
-            await importService.ImportAsync(jsonImportContext, cancellationToken);
+            var jsonImportContext = new OrderJsonImportContext(FileType.JSON, "D:\\additional orders.json");
+            var jsonImporter = importerFactory.Create(jsonImportContext);
+            result = await jsonImporter.ImportAsync(cancellationToken);
         }
 
         if (result.IsSuccess)
         {
-            var excelImportContext = new FileImportContext(FileType: FileType.EXCEL, InputPath: "D:\\additional orders.xlsx");
-            await importService.ImportAsync(excelImportContext, cancellationToken);
+            var excelImportContext = new OrderExcelImportContext(FileType.EXCEL, "D:\\additional orders.xlsx");
+            var excelImporter = importerFactory.Create(excelImportContext);
+            result = await excelImporter.ImportAsync(cancellationToken);
         }
 
         if (result.IsFailure)
